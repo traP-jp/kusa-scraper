@@ -28,6 +28,12 @@ type HiraganaResponse struct {
 	Converted  string `json:"converted"`
 }
 
+type Stamps struct {
+	TaskId  string `json:"taskId"`
+	StampId string `json:"stampId"`
+	Count   int    `json:"count"`
+}
+
 func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var messages []traq.Message
 	var before = time.Now()
@@ -107,7 +113,7 @@ func getYomigana(message string) (string, error) {
 	return responseData.Converted, nil
 }
 
-//return: citated, image, isNeedToRemove
+// return: citated, image, isNeedToRemove
 func processLinkInMessage(message *string) (string, string, bool) {
 	re := regexp.MustCompile(`(http|https)://.*`)
 	pathMessages := re.FindAllString(*message, -1)
@@ -137,9 +143,20 @@ func processLinkInMessage(message *string) (string, string, bool) {
 			*message = re.ReplaceAllString(*message, "")
 			continue
 		}
- 
-		return "", "", true			
+
+		return "", "", true
 	}
-	
+
 	return citated, image, false
+}
+
+func getStampsData(stamps []traq.MessageStamp) map[string]int {
+	stampsData := make(map[string]int)
+	for _, stamp := range stamps {
+		if _, ok := stampsData[stamp.StampId]; !ok {
+			stampsData[stamp.StampId] = 0
+		}
+		stampsData[stamp.StampId] += int(stamp.Count)
+	}
+	return stampsData
 }

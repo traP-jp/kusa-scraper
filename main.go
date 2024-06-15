@@ -96,6 +96,14 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			if err != nil {
 				panic(err)
 			}
+
+			stampsMap := getStampsData(message.Stamps)
+			for stampId, count := range stampsMap {
+				_, err = db.Exec("INSERT INTO stamps (taskId, stampId, count) VALUES (?, ?, ?)", message.Id, stampId, count)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 	}
 	simplePost(bot, p.Message.ChannelID, t)
