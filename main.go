@@ -87,7 +87,7 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			}
 			t += "https://q.trap.jp/messages/" + message.Id + "\n" + yomi + "\n"
 
-			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, kusaCount, level, isSensitive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, wcount, 1, false)
+			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)", message.Content, yomi, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, 1, false, "dummy", "dummy")
 			if err != nil {
 				panic(err)
 			}
