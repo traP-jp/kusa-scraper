@@ -71,6 +71,7 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 	allMessages, _ := getMessages(bot)
 	t := ":w: > 10\n"
 	target := "6308a443-69f0-45e5-866f-56cc2c93578f"
+
 	for _, message := range allMessages {
 		wcount := 0
 		for _, v := range message.Stamps {
@@ -81,6 +82,11 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 		if wcount > 10 {
 			t += "https://q.trap.jp/messages/"
 			t += message.Id + "\n"
+			fmt.Println(message.Content)
+			_, err := db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, kusaCount, level, isSensitive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, message.Content, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, wcount, 1, false)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	simplePost(bot, p.Message.ChannelID, t)

@@ -34,7 +34,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 		time.Sleep(time.Millisecond * 100)
 		before = messages[len(messages)-1].CreatedAt
 		fmt.Println(len(messages))
-		if !before.After(time.Now().Add(-time.Hour * 28 * 24)) {
+		if !before.After(time.Now().Add(-time.Hour * 7 * 24)) {
 			break
 		}
 	}
