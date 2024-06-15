@@ -127,7 +127,7 @@ func processLinkInMessage(message *string) (string, string, bool) {
 		}
 		if len(cites) == 1 {
 			citated = cites[0]
-			re = regexp.MustCompile(`\nhttps://q.trap.jp/messages/(.*)`)
+			re = regexp.MustCompile(`https://q.trap.jp/messages/(.*)`)
 			*message = re.ReplaceAllString(*message, "")
 			continue
 		}
@@ -139,7 +139,7 @@ func processLinkInMessage(message *string) (string, string, bool) {
 		}
 		if len(images) == 1 {
 			image = images[0]
-			re = regexp.MustCompile(`\nhttps://q.trap.jp/files/(.*)`)
+			re = regexp.MustCompile(`https://q.trap.jp/files/(.*)`)
 			*message = re.ReplaceAllString(*message, "")
 			continue
 		}
