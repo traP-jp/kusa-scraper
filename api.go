@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -13,35 +14,17 @@ import (
 
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
+	"github.com/traPtitech/traq-ws-bot/payload"
 )
-
-type HiraganaRequest struct {
-	AppId      string `json:"app_id"`
-	RequestId  string `json:"request_id"`
-	Sentence   string `json:"sentence"`
-	OutputType string `json:"output_type"`
-}
-
-type HiraganaResponse struct {
-	RequestId  string `json:"request_id"`
-	OutputType string `json:"output_type"`
-	Converted  string `json:"converted"`
-}
-
-type Stamps struct {
-	TaskId  string `json:"taskId"`
-	StampId string `json:"stampId"`
-	Count   int    `json:"count"`
-}
 
 func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var messages []traq.Message
 	var before = time.Now()
 	for {
 		t1 := time.Now()
-		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 
-		// res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).From("2e0c6679-166f-455a-b8b0-35cdfd257256").Before(before).Execute()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error when calling `ChannelApi.GetMessages``: %v\n", err)
 			fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -159,4 +142,56 @@ func getStampsData(stamps []traq.MessageStamp) map[string]int {
 		stampsData[stamp.StampId] += int(stamp.Count)
 	}
 	return stampsData
+}
+
+func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
+	allMessages, _ := getMessages(bot)
+	target := "6308a443-69f0-45e5-866f-56cc2c93578f"
+
+	for _, message := range allMessages {
+		wcount := 0
+		for _, v := range message.Stamps {
+			if v.GetStampId() == target {
+				wcount++
+			}
+		}
+		if wcount > 10 {
+
+			citated, image, isNeedToRemove := processLinkInMessage(&message.Content)
+			if isNeedToRemove {
+				continue
+			}
+
+			yomi, err := getYomigana(message.Content)
+			if err != nil {
+				panic(err)
+			}
+
+			user := usersMap[message.UserId]
+			userGrade := gradeMap[message.UserId]
+			iconUri := "https://q.trap.jp/api/v3/public/icon/" + user.Name
+
+			count := 0
+			err = db.QueryRow("SELECT COUNT(*) FROM tasks WHERE messageId = ?", message.Id).Scan(&count)
+
+			if err != nil {
+				log.Fatalf("DB Error: %s", err)
+			}
+			if count == 0 {
+				_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
+				if err != nil {
+					panic(err)
+				}
+
+				stampsMap := getStampsData(message.Stamps)
+				for stampId, count := range stampsMap {
+					_, err = db.Exec("INSERT INTO stamps (taskId, stampId, count) VALUES (?, ?, ?)", message.Id, stampId, count)
+					if err != nil {
+						panic(err)
+					}
+				}
+			}
+		}
+	}
+	simplePost(bot, p.Message.ChannelID, "completed")
 }
