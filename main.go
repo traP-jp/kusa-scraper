@@ -122,7 +122,7 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			if err != nil {
 				log.Fatalf("DB Error: %s", err)
 			}
-			if count != 0 {
+			if count == 0 {
 				_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
 				if err != nil {
 					panic(err)
