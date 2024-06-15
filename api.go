@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/traPtitech/go-traq"
@@ -104,4 +105,41 @@ func getYomigana(message string) (string, error) {
 	fmt.Println(string(responseDataStr))
 
 	return responseData.Converted, nil
+}
+
+//return: citated, image, isNeedToRemove
+func processLinkInMessage(message *string) (string, string, bool) {
+	re := regexp.MustCompile(`(http|https)://.*`)
+	pathMessages := re.FindAllString(*message, -1)
+	var citated, image string
+
+	for _, path := range pathMessages {
+		re := regexp.MustCompile(`https://q.trap.jp/messages/(.*)`)
+		cites := re.FindAllString(path, -1)
+		if len(cites) > 1 {
+			return "", "", true
+		}
+		if len(cites) == 1 {
+			citated = cites[0]
+			re = regexp.MustCompile(`\nhttps://q.trap.jp/messages/(.*)`)
+			*message = re.ReplaceAllString(*message, "")
+			continue
+		}
+
+		re = regexp.MustCompile(`https://q.trap.jp/files/(.*)`)
+		images := re.FindAllString(path, -1)
+		if len(images) > 1 {
+			return "", "", true
+		}
+		if len(images) == 1 {
+			image = images[0]
+			re = regexp.MustCompile(`\nhttps://q.trap.jp/files/(.*)`)
+			*message = re.ReplaceAllString(*message, "")
+			continue
+		}
+ 
+		return "", "", true			
+	}
+	
+	return citated, image, false
 }
