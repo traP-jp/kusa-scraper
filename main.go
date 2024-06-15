@@ -80,10 +80,14 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			}
 		}
 		if wcount > 10 {
-			t += "https://q.trap.jp/messages/"
-			t += message.Id + "\n"
-			fmt.Println(message.Content)
-			_, err := db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, kusaCount, level, isSensitive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, message.Content, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, wcount, 1, false)
+
+			yomi, err := getYomigana(message.Content)
+			if err != nil {
+				panic(err)
+			}
+			t += "https://q.trap.jp/messages/" + message.Id + "\n" + +yomi + "\n"
+
+			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, kusaCount, level, isSensitive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, message.Content, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, wcount, 1, false)
 			if err != nil {
 				panic(err)
 			}

@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
-	"io"
 
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
@@ -51,7 +51,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 		time.Sleep(time.Millisecond * 100)
 		before = messages[len(messages)-1].CreatedAt
 		fmt.Println(len(messages))
-		if !before.After(time.Now().Add(-time.Hour * 7 * 24)) {
+		if !before.After(time.Now().Add(-time.Hour * 4 * 24)) {
 			break
 		}
 	}
@@ -80,6 +80,7 @@ func getYomigana(message string) (string, error) {
 		Sentence:   message,
 		OutputType: "hiragana",
 	}
+	fmt.Println(message)
 
 	request, err := json.Marshal(hiraganaRequest)
 	if err != nil {
@@ -100,6 +101,7 @@ func getYomigana(message string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(string(responseDataStr))
 
 	return responseData.Converted, nil
 }
