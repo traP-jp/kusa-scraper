@@ -39,7 +39,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var before = time.Now()
 	for {
 		t1 := time.Now()
-		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).From("2e0c6679-166f-455a-b8b0-35cdfd257256").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 
 		// res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 		if err != nil {
@@ -58,7 +58,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 		time.Sleep(time.Millisecond * 100)
 		before = messages[len(messages)-1].CreatedAt
 		fmt.Println(len(messages))
-		if !before.After(time.Now().Add(-time.Hour * 4 * 24)) {
+		if !before.After(time.Now().Add(-time.Hour * 7 * 24)) {
 			break
 		}
 	}
