@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,12 +10,15 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
 	"github.com/traPtitech/traq-ws-bot/payload"
 )
 
 var (
 	db *sqlx.DB
+	usersMap = make(map[string]traq.User)
+	gradeMap = make(map[string]traq.UserGroup)
 )
 
 func main() {
@@ -55,6 +59,32 @@ func main() {
 			updateHandrer(bot, p)
 		}
 	})
+
+	users, resp, err := bot.API().UserApi.GetUsers(context.Background()).Execute()
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("HTTP Response: ", resp)			
+	}
+	for _, user := range users {
+		usersMap[user.Id] = user
+	}
+
+	groups, resp, err := bot.API().GroupApi.GetUserGroups(context.Background()).Execute()
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("HTTP Response: ", resp)
+	}
+	gradeGroups := []traq.UserGroup{}
+	for _, group := range groups {
+		if group.Type == "grade" {
+			gradeGroups = append(gradeGroups, group)
+		}
+	}
+	for _, group := range gradeGroups {
+		for _, member := range group.Members {
+			gradeMap[member.Id] = group
+		}
+	}
 	// channel, _, _ := bot.API().ChannelApi.GetChannels(context.Background()).Execute()
 	// fo, _ := NewForest(bot)
 	// list := channel.GetPublic()
@@ -92,7 +122,10 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			}
 			t += "https://q.trap.jp/messages/" + message.Id + "\n" + yomi + "\n"
 
-			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, "dummy", "dummy", "dummy", "dummy", message.UpdatedAt, 1, false, citated, image, message.Id)
+			user := usersMap[message.UserId]
+			userGrade := gradeMap[message.UserId]
+			iconUri := "https://q.trap.jp/api/v3/public/icon/" + user.Name
+			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
 			if err != nil {
 				panic(err)
 			}
