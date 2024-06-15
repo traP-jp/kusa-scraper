@@ -1,14 +1,31 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
+	"io"
 
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
 )
+
+type HiraganaRequest struct {
+	AppId      string `json:"app_id"`
+	RequestId  string `json:"request_id"`
+	Sentence   string `json:"sentence"`
+	OutputType string `json:"output_type"`
+}
+
+type HiraganaResponse struct {
+	RequestId  string `json:"request_id"`
+	OutputType string `json:"output_type"`
+	Converted  string `json:"converted"`
+}
 
 func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var messages []traq.Message
@@ -54,4 +71,35 @@ func simplePost(bot *traqwsbot.Bot, c string, s string) (x string) {
 		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
 	}
 	return q.Id
+}
+
+func getYomigana(message string) (string, error) {
+	hiraganaRequest := HiraganaRequest{
+		AppId:      os.Getenv("GOO_APP_ID"),
+		RequestId:  "",
+		Sentence:   message,
+		OutputType: "hiragana",
+	}
+
+	request, err := json.Marshal(hiraganaRequest)
+	if err != nil {
+		return "", err
+	}
+	response, err := http.Post("https://labs.goo.ne.jp/api/hiragana", "application/json", bytes.NewBuffer([]byte(request)))
+	if err != nil {
+		fmt.Println("Error sending request")
+		return "", err
+	}
+	defer response.Body.Close()
+	responseDataStr, err := io.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+	responseData := HiraganaResponse{}
+	err = json.Unmarshal(responseDataStr, &responseData)
+	if err != nil {
+		return "", err
+	}
+
+	return responseData.Converted, nil
 }
