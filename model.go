@@ -1,18 +1,27 @@
 package main
 
-type HiraganaRequest struct {
-	AppId      string `json:"app_id"`
-	RequestId  string `json:"request_id"`
-	Sentence   string `json:"sentence"`
-	OutputType string `json:"output_type"`
+type RubyRequest struct {
+	Id      string     `json:"id"`
+	Jsonrpc string     `json:"jsonrpc"`
+	Method  string     `json:"method"`
+	Params  RubyParams `json:"params"`
 }
-
-type HiraganaResponse struct {
-	RequestId  string `json:"request_id"`
-	OutputType string `json:"output_type"`
-	Converted  string `json:"converted"`
+type RubyParams struct {
+	Q string `json:"q"`
 }
-
+type RubyResponse struct {
+	Id      string     `json:"id"`
+	Jsonrpc string     `json:"jsonrpc"`
+	Result  RubyResult `json:"result"`
+}
+type RubyResult struct {
+	Word []RubyWord `json:"word"`
+}
+type RubyWord struct {
+	Furigana string `json:"furigana"`
+	Roman    string `json:"roman"`
+	Surface  string `json:"surface"`
+}
 type Stamps struct {
 	TaskId  string `json:"taskId"`
 	StampId string `json:"stampId"`

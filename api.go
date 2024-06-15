@@ -22,9 +22,9 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var before = time.Now()
 	for {
 		t1 := time.Now()
-		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 
-		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).From("2e0c6679-166f-455a-b8b0-35cdfd257256").Before(before).Execute()
+		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).From("2e0c6679-166f-455a-b8b0-35cdfd257256").Before(before).Execute()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error when calling `ChannelApi.GetMessages``: %v\n", err)
 			fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -64,11 +64,13 @@ func simplePost(bot *traqwsbot.Bot, c string, s string) (x string) {
 }
 
 func getYomigana(message string) (string, error) {
-	hiraganaRequest := HiraganaRequest{
-		AppId:      os.Getenv("GOO_APP_ID"),
-		RequestId:  "",
-		Sentence:   message,
-		OutputType: "hiragana",
+	hiraganaRequest := RubyRequest{
+		Id:      "kusa",
+		Jsonrpc: "2.0",
+		Method:  "jlp.furiganaservice.furigana",
+		Params: RubyParams{
+			Q: message,
+		},
 	}
 	fmt.Println(message)
 
@@ -76,24 +78,44 @@ func getYomigana(message string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	response, err := http.Post("https://labs.goo.ne.jp/api/hiragana", "application/json", bytes.NewBuffer([]byte(request)))
-	if err != nil {
-		fmt.Println("Error sending request")
-		return "", err
-	}
-	defer response.Body.Close()
-	responseDataStr, err := io.ReadAll(response.Body)
+	req, err := http.NewRequest(
+		"POST",
+		"https://jlp.yahooapis.jp/FuriganaService/V2/furigana",
+		bytes.NewBuffer([]byte(request)),
+	)
 	if err != nil {
 		return "", err
 	}
-	responseData := HiraganaResponse{}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Yahoo AppID: "+os.Getenv("YAHOO_APP_ID"))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	responseDataStr, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	responseData := RubyResponse{}
 	err = json.Unmarshal(responseDataStr, &responseData)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(responseDataStr))
 
-	return responseData.Converted, nil
+	finalFurigana := ""
+	for _, v := range responseData.Result.Word {
+		if v.Furigana == "" {
+			finalFurigana += v.Surface
+		} else {
+			finalFurigana += v.Furigana
+		}
+	}
+	return finalFurigana, nil
 }
 
 // return: citated, image, isNeedToRemove
@@ -145,6 +167,7 @@ func getStampsData(stamps []traq.MessageStamp) map[string]int {
 }
 
 func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
+	fmt.Println(p.Message.Text)
 	allMessages, _ := getMessages(bot)
 	target := "6308a443-69f0-45e5-866f-56cc2c93578f"
 
