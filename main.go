@@ -115,16 +115,25 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			user := usersMap[message.UserId]
 			userGrade := gradeMap[message.UserId]
 			iconUri := "https://q.trap.jp/api/v3/public/icon/" + user.Name
-			_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
-			if err != nil {
-				panic(err)
-			}
 
-			stampsMap := getStampsData(message.Stamps)
-			for stampId, count := range stampsMap {
-				_, err = db.Exec("INSERT INTO stamps (taskId, stampId, count) VALUES (?, ?, ?)", message.Id, stampId, count)
+			count := 0
+			err = db.QueryRow("SELECT COUNT(*) FROM tasks WHERE messageId = ?", message.Id).Scan(&count)
+
+			if err != nil {
+				log.Fatalf("DB Error: %s", err)
+			}
+			if count != 0 {
+				_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
 				if err != nil {
 					panic(err)
+				}
+
+				stampsMap := getStampsData(message.Stamps)
+				for stampId, count := range stampsMap {
+					_, err = db.Exec("INSERT INTO stamps (taskId, stampId, count) VALUES (?, ?, ?)", message.Id, stampId, count)
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 		}
