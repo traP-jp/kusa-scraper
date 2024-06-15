@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	db *sqlx.DB
+	db       *sqlx.DB
 	usersMap = make(map[string]traq.User)
 	gradeMap = make(map[string]traq.UserGroup)
 )
@@ -63,7 +63,7 @@ func main() {
 	users, resp, err := bot.API().UserApi.GetUsers(context.Background()).Execute()
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println("HTTP Response: ", resp)			
+		fmt.Println("HTTP Response: ", resp)
 	}
 	for _, user := range users {
 		usersMap[user.Id] = user
@@ -85,14 +85,6 @@ func main() {
 			gradeMap[member.Id] = group
 		}
 	}
-	// channel, _, _ := bot.API().ChannelApi.GetChannels(context.Background()).Execute()
-	// fo, _ := NewForest(bot)
-	// list := channel.GetPublic()
-	// for _, c := range list {
-	// 	if !c.GetArchived() {
-	// 		fmt.Println(c.Id, fo.id_to_path[c.Id])
-	// 	}
-	// }
 	if err := bot.Start(); err != nil {
 		panic(err)
 	}
