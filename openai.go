@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 )
@@ -58,7 +59,13 @@ func isSensitive(message string) (bool, error) {
 
 	responseBool, err := strconv.ParseBool(responseObj.Choices[0].Message.Content)
 	if err != nil {
-		fmt.Println(responseObj.Choices[0].Message.Content, err)
+		if strings.Contains(responseObj.Choices[0].Message.Content, "true") {
+			return true, nil
+		}else if strings.Contains(responseObj.Choices[0].Message.Content, "false") {
+			return false, nil
+		}
+		//よくないレスポンスが帰ってきたら、falseを返す
+		fmt.Println("bad openai response: ", responseObj.Choices[0].Message.Content, err)
 		return false, nil
 	}
 
