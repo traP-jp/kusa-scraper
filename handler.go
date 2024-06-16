@@ -40,6 +40,7 @@ func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 		return
 	}
 	var err error
+	fmt.Println(message.Content)
 	if citated != "" {
 		citated, err = getCitetedMessage(citated, bot)
 		if err != nil {
