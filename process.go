@@ -49,7 +49,7 @@ func processLinkInMessage(message *string) (string, string, bool) {
 }
 
 func getCitetedMessage(citated string, bot *traqwsbot.Bot) (string, error) {
-	message, _, err := bot.API().MessageApi.GetMessage(context.Background(), citated).Execute()
+	message, _, err := bot.API().MessageApi.GetMessage(context.Background(), citated[27:]).Execute()
 	if err != nil {
 		return "", err
 	}

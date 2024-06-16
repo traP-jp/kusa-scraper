@@ -20,8 +20,10 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	for {
 		t1 := time.Now()
 		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		if os.Getenv("DEV") == "true" {
 
-		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).In("3949c30c-50fb-4893-8126-0ce8e1675e00").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+			res, r, err = bot.API().MessageApi.SearchMessages(context.Background()).In("3949c30c-50fb-4893-8126-0ce8e1675e00").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error when calling `ChannelApi.GetMessages``: %v\n", err)
 			fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -45,20 +47,6 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 
 	return messages, nil
 }
-func simplePost(bot *traqwsbot.Bot, c string, s string) (x string) {
-	q, r, err := bot.API().
-		MessageApi.
-		PostMessage(context.Background(), c).
-		PostMessageRequest(traq.PostMessageRequest{
-			Content: s,
-		}).
-		Execute()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
-	}
-	return q.Id
-}
 
 func getYomigana(message string) (string, error) {
 	hiraganaRequest := RubyRequest{
@@ -69,7 +57,6 @@ func getYomigana(message string) (string, error) {
 			Q: message,
 		},
 	}
-	fmt.Println(message)
 
 	request, err := json.Marshal(hiraganaRequest)
 	if err != nil {
@@ -112,6 +99,8 @@ func getYomigana(message string) (string, error) {
 			finalFurigana += v.Furigana
 		}
 	}
+
+	fmt.Println("finalFurigana: ", finalFurigana)
 	removeStampMessage(&finalFurigana)
 	removeIncompatibleChars(&finalFurigana)
 	return finalFurigana, nil

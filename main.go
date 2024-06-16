@@ -56,7 +56,7 @@ func main() {
 		fmt.Println(p.Message.Text)
 		cmd := strings.Split(p.Message.Text, " ")
 		if cmd[1] == "update" {
-			updateHandrer(bot, p)
+			updateHandrer(bot)
 		}
 	})
 
@@ -84,6 +84,9 @@ func main() {
 		for _, member := range group.Members {
 			gradeMap[member.Id] = group
 		}
+	}
+	if os.Getenv("DEV") == "true" {
+		updateHandrer(bot)
 	}
 	if err := bot.Start(); err != nil {
 		panic(err)

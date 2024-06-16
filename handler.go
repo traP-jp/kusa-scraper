@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
-	"github.com/traPtitech/traq-ws-bot/payload"
 )
 
-func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
-	fmt.Println(p.Message.Text)
+func updateHandrer(bot *traqwsbot.Bot) {
 	allMessages, _ := getMessages(bot)
 	target := "6308a443-69f0-45e5-866f-56cc2c93578f"
 
@@ -23,11 +22,14 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 		}
 
 		fmt.Println(message.Content)
-		if wcount >= 15 {
+		minimumw := 15
+		if os.Getenv("DEV") == "true" {
+			minimumw = 0
+		}
+		if wcount >= minimumw {
 			insertTask(message, bot)
 		}
 	}
-	simplePost(bot, p.Message.ChannelID, "completed")
 }
 func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 	citated, image, isNeedToRemove := processLinkInMessage(&message.Content)
@@ -62,6 +64,7 @@ func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 	if err != nil {
 		log.Fatalf("DB Error: %s", err)
 	}
+	fmt.Println(yomi)
 	if count == 0 {
 		_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
 		if err != nil {
