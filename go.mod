@@ -9,6 +9,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/traPtitech/go-traq v0.0.0-20240509050113-9343acbeec35
 	github.com/traPtitech/traq-ws-bot v1.1.3
+	golang.org/x/text v0.16.0
 )
 
 require (

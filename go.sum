@@ -20,3 +20,5 @@ github.com/traPtitech/traq-ws-bot v1.1.3 h1:Cehz+ORmz/j2HexJHtm6yS/lmAq99REpojfw
 github.com/traPtitech/traq-ws-bot v1.1.3/go.mod h1:mnUHbZiFLydoUxS2q8kzR1E+1RMRXrmEpUdSAxh0jvo=
 golang.org/x/oauth2 v0.20.0 h1:4mQdhULixXKP1rwYBW0vAijoXnkTG0BLCDRzfe1idMo=
 golang.org/x/oauth2 v0.20.0/go.mod h1:XYTD2NtWslqkgxebSiOHnXEap4TF09sJSc7H1sXbhtI=
+golang.org/x/text v0.16.0 h1:a94ExnEXNtEwYLGJSIUxnWoxoRz/ZcCsV63ROupILh4=
+golang.org/x/text v0.16.0/go.mod h1:GhwF1Be+LQoKShO3cGOHzqOgRrGaYc9AvblQOmPVHnI=

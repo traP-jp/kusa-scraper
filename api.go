@@ -16,6 +16,7 @@ import (
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
 	"github.com/traPtitech/traq-ws-bot/payload"
+	"golang.org/x/text/width"
 )
 
 func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
@@ -116,6 +117,7 @@ func getYomigana(message string) (string, error) {
 			finalFurigana += v.Furigana
 		}
 	}
+	removeIncompatibleChars(&finalFurigana)
 	return finalFurigana, nil
 }
 
@@ -208,6 +210,12 @@ func getStampsData(stamps []traq.MessageStamp) map[string]int {
 		stampsData[stamp.StampId] += int(stamp.Count)
 	}
 	return stampsData
+}
+
+func removeIncompatibleChars(message *string) {
+	re := regexp.MustCompile(`[^a-zA-Z0-9ぁ-ん０-９ａ-ｚＡ-Ｚー]`)
+	re.ReplaceAllString(*message, "")
+	width.Fold.String(*message)
 }
 
 func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
