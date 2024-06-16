@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/traPtitech/go-traq"
@@ -155,6 +156,49 @@ func processLinkInMessage(message *string) (string, string, bool) {
 	return citated, image, false
 }
 
+func getCitetedMessage(citated string, bot *traqwsbot.Bot) (string, error) {
+	message, _, err := bot.API().MessageApi.GetMessage(context.Background(), citated).Execute()
+	if err != nil {
+		return "", err
+	}
+
+	re := regexp.MustCompile(`(http|https)://[a-zA-Z0-9./-_!'()?&:]*`)
+	linkRemovedMessage := re.ReplaceAllString(message.Content, "")
+	processMentionToPlainText(&linkRemovedMessage)
+	removeTex(&linkRemovedMessage)
+
+	return linkRemovedMessage, nil
+}
+
+func processMentionToPlainText(message *string) {
+	re := regexp.MustCompile(`!{"type":([^!]*)}`)
+	mentions := re.FindAllString(*message, -1)
+	for _, mention := range mentions {
+		fmt.Println(mention)
+		re = regexp.MustCompile(`"raw":"(.*)",( *)"id"`)
+		mentionRaw := re.FindString(mention)
+		mentionRaw = mentionRaw[8 : len(mentionRaw)-1]
+		quoteIndex := strings.Index(mentionRaw, "\"")
+		mentionRaw = mentionRaw[:quoteIndex]
+		*message = strings.Replace(*message, mention, mentionRaw, 1)
+	}
+}
+
+func removeTex(message *string) {
+	re := regexp.MustCompile(`\$(.*)\$`)
+	*message = re.ReplaceAllString(*message, "")
+}
+
+func isContainsCodeBrocks(message string) bool {
+	re := regexp.MustCompile("```+")
+	return re.MatchString(message)
+}
+
+func isConstainsMdTable(message string) bool {
+	re := regexp.MustCompile(`\|(.*)\|`)
+	return re.MatchString(message)
+}
+
 func getStampsData(stamps []traq.MessageStamp) map[string]int {
 	stampsData := make(map[string]int)
 	for _, stamp := range stamps {
@@ -184,6 +228,15 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			if isNeedToRemove {
 				continue
 			}
+			if isContainsCodeBrocks(message.Content) || isConstainsMdTable(message.Content) {
+				continue
+			}
+			citated, err := getCitetedMessage(citated, bot)
+			if err != nil {
+				panic(err)
+			}
+			processMentionToPlainText(&citated)
+			removeTex(&citated)
 
 			yomi, err := getYomigana(message.Content)
 			if err != nil {
