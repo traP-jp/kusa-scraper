@@ -58,6 +58,14 @@ func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 	userGrade := gradeMap[message.UserId]
 	iconUri := "https://q.trap.jp/api/v3/public/icon/" + user.Name
 
+	level := 1
+	if len([]rune(yomi)) < 5 {
+		return
+
+	} else if len([]rune(yomi)) > 20 {
+		level = 2
+	}
+
 	count := 0
 	err = db.QueryRow("SELECT COUNT(*) FROM tasks WHERE messageId = ?", message.Id).Scan(&count)
 
@@ -66,7 +74,7 @@ func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 	}
 	fmt.Println(yomi)
 	if count == 0 {
-		_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, 1, false, citated, image, message.Id)
+		_, err = db.Exec("INSERT INTO tasks (content, yomi, iconUri, authorDisplayName, grade, authorName, updatedAt, level, isSensitive,citated, image, messageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", message.Content, yomi, iconUri, user.DisplayName, userGrade.Name, user.Name, message.UpdatedAt, level, false, citated, image, message.Id)
 		if err != nil {
 			panic(err)
 		}
