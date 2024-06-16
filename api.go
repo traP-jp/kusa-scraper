@@ -24,9 +24,9 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 	var before = time.Now()
 	for {
 		t1 := time.Now()
-		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 
-		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).From("2e0c6679-166f-455a-b8b0-35cdfd257256").Before(before).Execute()
+		//res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).In("3949c30c-50fb-4893-8126-0ce8e1675e00").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error when calling `ChannelApi.GetMessages``: %v\n", err)
 			fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
@@ -236,8 +236,9 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 				wcount++
 			}
 		}
-		if wcount > 10 {
 
+		fmt.Println(message.Content)
+		if wcount >= 15 {
 			citated, image, isNeedToRemove := processLinkInMessage(&message.Content)
 			if isNeedToRemove {
 				continue
@@ -245,10 +246,14 @@ func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
 			if isContainsCodeBrocks(message.Content) || isConstainsMdTable(message.Content) {
 				continue
 			}
-			citated, err := getCitetedMessage(citated, bot)
-			if err != nil {
-				panic(err)
+			var err error
+			if citated != "" {
+				citated, err = getCitetedMessage(citated, bot)
+				if err != nil {
+					panic(err)
+				}
 			}
+
 			processMentionToPlainText(&citated)
 			removeTex(&citated)
 
