@@ -18,26 +18,26 @@ func processLinkInMessage(message *string) (string, string, bool) {
 	var citated, image string
 
 	for _, path := range pathMessages {
-		re := regexp.MustCompile(`https://q.trap.jp/messages/(.*)`)
+		re := regexp.MustCompile(`https://q.trap.jp/messages/([^!*]*)`)
 		cites := re.FindAllString(path, -1)
 		if len(cites) > 1 {
 			return "", "", true
 		}
 		if len(cites) == 1 {
 			citated = cites[0]
-			re = regexp.MustCompile(`https://q.trap.jp/messages/(.*)`)
+			re = regexp.MustCompile(`https://q.trap.jp/messages/([^!*]*)`)
 			*message = re.ReplaceAllString(*message, "")
 			continue
 		}
 
-		re = regexp.MustCompile(`https://q.trap.jp/files/(.*)`)
+		re = regexp.MustCompile(`https://q.trap.jp/files/([^!*]*)`)
 		images := re.FindAllString(path, -1)
 		if len(images) > 1 {
 			return "", "", true
 		}
 		if len(images) == 1 {
 			image = images[0]
-			re = regexp.MustCompile(`https://q.trap.jp/files/(.*)`)
+			re = regexp.MustCompile(`https://q.trap.jp/files/([^!*]*)`)
 			*message = re.ReplaceAllString(*message, "")
 			continue
 		}
@@ -54,7 +54,7 @@ func getCitetedMessage(citated string, bot *traqwsbot.Bot) (string, error) {
 		return "", err
 	}
 
-	re := regexp.MustCompile(`(http|https)://[^\s]*`)
+	re := regexp.MustCompile(`(http|https)://[^*!\s]*`)
 	linkRemovedMessage := re.ReplaceAllString(message.Content, "")
 	processMentionToPlainText(&linkRemovedMessage)
 	removeTex(&linkRemovedMessage)
