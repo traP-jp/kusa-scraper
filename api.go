@@ -23,7 +23,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 		res, r, err := bot.API().MessageApi.SearchMessages(context.Background()).Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 		if os.Getenv("DEV") == "true" {
 
-			res, r, err = bot.API().MessageApi.SearchMessages(context.Background()).In("3949c30c-50fb-4893-8126-0ce8e1675e00").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
+			res, r, err = bot.API().MessageApi.SearchMessages(context.Background()).In("d241f853-302b-49be-a921-cb8855437d62").Limit(int32(100)).Offset(int32(0)).Before(before).Execute()
 		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error when calling `ChannelApi.GetMessages``: %v\n", err)
