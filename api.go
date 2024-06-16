@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"unicode"
 
 	"github.com/traPtitech/go-traq"
 	traqwsbot "github.com/traPtitech/traq-ws-bot"
@@ -49,12 +50,20 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 }
 
 func getYomigana(message string) (string, error) {
+	fmt.Println("message: ", message)
+	originalStr := ""
+	for _, r := range message {
+		if unicode.In(r, unicode.Latin) || unicode.In(r, unicode.Hiragana) || unicode.In(r, unicode.Katakana) || unicode.In(r, unicode.Han) || unicode.In(r, unicode.Number) {
+			originalStr += string(r)
+		}
+	}
+	fmt.Println("originalStr: ", originalStr)
 	hiraganaRequest := RubyRequest{
 		Id:      "kusa",
 		Jsonrpc: "2.0",
 		Method:  "jlp.furiganaservice.furigana",
 		Params: RubyParams{
-			Q: message,
+			Q: originalStr,
 		},
 	}
 
