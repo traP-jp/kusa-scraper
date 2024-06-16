@@ -47,8 +47,8 @@ func insertTask(message traq.Message, bot *traqwsbot.Bot) {
 		}
 	}
 
-	processMentionToPlainText(&citated)
-	removeTex(&citated)
+	processMentionToPlainText(&message.Content)
+	removeTex(&message.Content)
 
 	yomi, err := getYomigana(message.Content)
 	if err != nil {
