@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -14,11 +15,11 @@ import (
 func isSensitive(message string) (bool, error) {
 	openAIRequestMessage := OpenAIRequestMessage{
 		Role:    "user",
-		Content: "次の文章には、18歳未満に対して不適切な内容が含まれていますか？trueかfalseで答えてください。\n\n「" + message + "」",
+		Content: "次の文章には、18歳未満に対して不適切な内容が含まれていますか？trueかfalseのどちらかで答えてください。trueかfalseのどちらか以外の文字列が回答に含まれないようにしてください。\n\n「" + message + "」",
 	}
 
 	openAIRequest := OpenAIRequest{
-		Model: "gp-3.5-turbo-1106",
+		Model: "gpt-3.5-turbo",
 		Messages: []OpenAIRequestMessage{
 			openAIRequestMessage,
 		},
@@ -55,9 +56,10 @@ func isSensitive(message string) (bool, error) {
 		return false, echo.NewHTTPError(http.StatusInternalServerError, "Failed to unmarshal response from openAI", err)
 	}
 
-	responseBool, err := strconv.ParseBool(responseObj.Choices[0].Message[0].Content)
+	responseBool, err := strconv.ParseBool(responseObj.Choices[0].Message.Content)
 	if err != nil {
-		return false, echo.NewHTTPError(http.StatusInternalServerError, "Failed to parse response from openAI", err)
+		fmt.Println(responseObj.Choices[0].Message.Content, err)
+		return false, nil
 	}
 
 	return responseBool, nil

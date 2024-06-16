@@ -19,8 +19,8 @@ type OpenAIResponse struct {
 }
 
 type OpenAIResponseChoice struct {
-	Index   int                           `json:"index"`
-	Message []OpenAIResponseChoiceMessage `json:"message"`
+	Index   int                         `json:"index"`
+	Message OpenAIResponseChoiceMessage `json:"message"`
 }
 
 type OpenAIResponseChoiceMessage struct {
