@@ -54,7 +54,7 @@ func getCitetedMessage(citated string, bot *traqwsbot.Bot) (string, error) {
 		return "", err
 	}
 
-	re := regexp.MustCompile(`(http|https)://[a-zA-Z0-9./-_!'()?&:]*`)
+	re := regexp.MustCompile(`(http|https)://[^\s]*`)
 	linkRemovedMessage := re.ReplaceAllString(message.Content, "")
 	processMentionToPlainText(&linkRemovedMessage)
 	removeTex(&linkRemovedMessage)
@@ -111,4 +111,5 @@ func removeIncompatibleChars(message *string) {
 func removeStampMessage(message *string) {
 	re := regexp.MustCompile(`:[a-z\-_\.]*:`)
 	*message = re.ReplaceAllString(*message, "")
+	fmt.Println("!!!!!!!!!!!!!!!!!this is removed stamp:", *message)
 }

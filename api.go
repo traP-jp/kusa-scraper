@@ -51,6 +51,7 @@ func getMessages(bot *traqwsbot.Bot) ([]traq.Message, error) {
 
 func getYomigana(message string) (string, error) {
 	fmt.Println("message: ", message)
+	removeStampMessage(&message)
 	originalStr := ""
 	for _, r := range message {
 		if unicode.In(r, unicode.Latin) || unicode.In(r, unicode.Hiragana) || unicode.In(r, unicode.Katakana) || unicode.In(r, unicode.Han) || unicode.In(r, unicode.Number) {
@@ -110,7 +111,6 @@ func getYomigana(message string) (string, error) {
 	}
 
 	fmt.Println("finalFurigana: ", finalFurigana)
-	removeStampMessage(&finalFurigana)
 	removeIncompatibleChars(&finalFurigana)
 	return finalFurigana, nil
 }
