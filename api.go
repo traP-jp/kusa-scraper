@@ -117,6 +117,7 @@ func getYomigana(message string) (string, error) {
 			finalFurigana += v.Furigana
 		}
 	}
+	removeStampMessage(&finalFurigana)
 	removeIncompatibleChars(&finalFurigana)
 	return finalFurigana, nil
 }
@@ -216,6 +217,11 @@ func removeIncompatibleChars(message *string) {
 	re := regexp.MustCompile(`[^a-zA-Z0-9ぁ-ん０-９ａ-ｚＡ-Ｚー]`)
 	re.ReplaceAllString(*message, "")
 	width.Fold.String(*message)
+}
+
+func removeStampMessage(message *string) {
+	re := regexp.MustCompile(`:[a-z\-_\.]:`)
+	*message = re.ReplaceAllString(*message, "")
 }
 
 func updateHandrer(bot *traqwsbot.Bot, p *payload.MessageCreated) {
