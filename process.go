@@ -111,5 +111,4 @@ func removeIncompatibleChars(message *string) {
 func removeStampMessage(message *string) {
 	re := regexp.MustCompile(`:[a-z\-_\.]*:`)
 	*message = re.ReplaceAllString(*message, "")
-	fmt.Println("!!!!!!!!!!!!!!!!!this is removed stamp:", *message)
 }
