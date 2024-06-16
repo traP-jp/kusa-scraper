@@ -103,12 +103,12 @@ func getStampsData(stamps []traq.MessageStamp) map[string]int {
 }
 
 func removeIncompatibleChars(message *string) {
-	re := regexp.MustCompile(`[^a-zA-Z0-9ぁ-ん０-９ａ-ｚＡ-Ｚー]`)
-	re.ReplaceAllString(*message, "")
-	width.Fold.String(*message)
+	re := regexp.MustCompile(`[^a-zA-Z0-9ぁ-ん０-９ａ-ｚＡ-Ｚー]*`)
+	*message = re.ReplaceAllString(*message, "")
+	*message = width.Fold.String(*message)
 }
 
 func removeStampMessage(message *string) {
-	re := regexp.MustCompile(`:[a-z\-_\.]:`)
+	re := regexp.MustCompile(`:[a-z\-_\.]*:`)
 	*message = re.ReplaceAllString(*message, "")
 }
